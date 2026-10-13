@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberSec Ranch // Vulnerability Lab Suite & CTF Portal</title>
+    <meta name="description" content="Central management dashboard for Docker cybersecurity training labs, vulnerable web applications, and CTF challenges.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Ambient Grid & Glows -->
+    <div class="cyber-grid"></div>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <span class="glitch-icon">🤠</span>
+                </div>
+                <div>
+                    <h1 class="portal-title">CYBERSEC <span class="highlight">RANCH</span></h1>
+                    <p class="portal-subtitle">Where vulnerabilities roam free & flags get wrangled</p>
+                </div>
+            </div>
+
+            <div class="header-stats">
+                <div class="stat-pill">
+                    <span class="stat-label">TOTAL LABS</span>
+                    <span class="stat-val" id="totalLabsCount">17</span>
+                </div>
+                <div class="stat-pill">
+                    <span class="stat-label">ACTIVE PROFILES</span>
+                    <span class="stat-val text-accent">5</span>
+                </div>
+                <div class="stat-pill">
+                    <span class="stat-label">FLAGS CAPTURED</span>
+                    <span class="stat-val text-success" id="flagsCapturedCount">0 / 8</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="portal-main">
+        <!-- Quick Action / Launch Profile Banner -->
+        <section class="banner-quick-actions">
+            <div class="quick-intro">
+                <h2>🚀 Lab Environment Controller</h2>
+                <p>Launch targeted security training environments using Docker Compose profiles or run the custom micro-challenges.</p>
+            </div>
+            <div class="cli-command-box">
+                <div class="cli-tabs">
+                    <button class="cli-tab active" data-cmd="ps">PowerShell</button>
+                    <button class="cli-tab" data-cmd="bash">Bash / Linux</button>
+                    <button class="cli-tab" data-cmd="compose">Docker Compose</button>
+                </div>
+                <div class="cli-snippet">
+                    <code id="cliSnippetCode">.\launch.ps1 -Profile custom-ctf</code>
+                    <button class="copy-btn" id="copyCliBtn" title="Copy command">📋 Copy</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Category & Difficulty Filters and Search -->
+        <section class="controls-toolbar">
+            <div class="filter-wrapper">
+                <div class="filter-row">
+                    <span class="filter-label">CATEGORY:</span>
+                    <div class="filter-group">
+                        <button class="filter-btn active" data-filter="all">All Labs</button>
+                        <button class="filter-btn" data-filter="custom-ctf">🎯 Custom CTFs</button>
+                        <button class="filter-btn" data-filter="web-classic">🏛️ Classic Web (DVWA/bWAPP)</button>
+                        <button class="filter-btn" data-filter="web-modern">✨ Modern (Juice Shop/WebGoat)</button>
+                        <button class="filter-btn" data-filter="api-graphql">📡 API & GraphQL</button>
+                    </div>
+                </div>
+
+                <div class="filter-row" style="margin-top: 0.5rem;">
+                    <span class="filter-label">DIFFICULTY:</span>
+                    <div class="filter-group diff-filter-group">
+                        <button class="diff-btn active" data-diff="all">All Levels</button>
+                        <button class="diff-btn diff-btn-easy" data-diff="easy">🟢 Easy / Beginner</button>
+                        <button class="diff-btn diff-btn-medium" data-diff="medium">🟡 Medium / Intermediate</button>
+                        <button class="diff-btn diff-btn-hard" data-diff="hard">🔴 Hard / Advanced</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="search-sort-box">
+                <input type="text" id="labSearchInput" placeholder="🔍 Search by name, vulnerability, CVE, tag..." />
+                <button class="action-btn" id="checkStatusBtn">🔄 Test Connectivity</button>
+            </div>
+        </section>
+
+        <!-- Lab Cards Grid -->
+        <section class="labs-section">
+            <div class="labs-grid" id="labsGrid">
+                <!-- Injected dynamically by app.js -->
+            </div>
+        </section>
+
+        <!-- CTF Flag Validator Section -->
+        <section class="flag-validator-card" id="flagSection">
+            <div class="flag-header">
+                <div>
+                    <h2>🚩 CTF Flag Verification Engine</h2>
+                    <p>Enter captured challenge flags (format <code>CTF{...}</code>) to validate your exploitation work!</p>
+                </div>
+                <button class="reset-progress-btn" id="resetProgressBtn">Reset Score</button>
+            </div>
+
+            <form class="flag-input-form" id="flagForm">
+                <input type="text" id="flagInput" placeholder="CTF{example_flag_here}" required autocomplete="off" />
+                <button type="submit" class="submit-flag-btn">Verify Flag</button>
+            </form>
+            <div id="flagFeedback" class="flag-feedback"></div>
+
+            <div class="captured-flags-list" id="capturedFlagsList">
+                <!-- Captured flags badges appear here -->
+            </div>
+        </section>
+
+        <!-- OWASP Top 10 Reference Quick Drawer -->
+        <section class="owasp-reference-section">
+            <h2>🛡️ OWASP Top 10 Vulnerability Matrix</h2>
+            <div class="owasp-grid">
+                <div class="owasp-card">
+                    <span class="owasp-code">A01:2021</span>
+                    <h4>Broken Access Control</h4>
+                    <p>Juice Shop, DVWA, Mutillidae, JWT Vault</p>
+                </div>
+                <div class="owasp-card">
+                    <span class="owasp-code">A02:2021</span>
+                    <h4>Cryptographic Failures</h4>
+                    <p>JWT Vault, WebGoat, bWAPP</p>
+                </div>
+                <div class="owasp-card">
+                    <span class="owasp-code">A03:2021</span>
+                    <h4>Injection (SQLi, SSTI, Cmd)</h4>
+                    <p>SQLi Challenge, SSTI Templater, NetProbe, DVWA, XVWA</p>
+                </div>
+                <div class="owasp-card">
+                    <span class="owasp-code">A05:2021</span>
+                    <h4>Security Misconfiguration</h4>
+                    <p>DVGA GraphQL, vAPI, Mutillidae</p>
+                </div>
+                <div class="owasp-card">
+                    <span class="owasp-code">A07:2021</span>
+                    <h4>Identification & Auth Failures</h4>
+                    <p>SQLi Auth Bypass, JWT Vault, bWAPP</p>
+                </div>
+                <div class="owasp-card">
+                    <span class="owasp-code">A10:2021</span>
+                    <h4>Server-Side Request Forgery</h4>
+                    <p>SSRF Cloud Simulator, Juice Shop, WebGoat</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Lab Details Modal -->
+    <div class="modal-backdrop" id="labModal">
+        <div class="modal-dialog">
+            <button class="modal-close" id="modalCloseBtn">&times;</button>
+            <div class="modal-body" id="modalBody">
+                <!-- Injected via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <footer class="portal-footer">
+        <p>Cybersecurity Training Range & CTF Environment • Antigravity Security Suite</p>
+        <p class="disclaimer">⚠️ For authorized security research, educational training, and penetration testing drills only.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

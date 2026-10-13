@@ -1,0 +1,395 @@
+name: ctf-training-suite
+
+services:
+  # ============================================================================
+  # CORE TRAINING DASHBOARD & CONTROL PORTAL
+  # ============================================================================
+  ctf-dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: ctf-training-dashboard
+    restart: unless-stopped
+    ports:
+      - "${PORT_DASHBOARD:-8000}:8000"
+    environment:
+      - PORT=8000
+    networks:
+      - ctf-net
+    profiles: ["all", "core", "dashboard", "web-classic", "web-modern", "api-graphql", "custom-ctf"]
+
+  # ============================================================================
+  # PROFILE: web-classic (Classic OWASP PHP / MySQL Vulnerable Applications)
+  # ============================================================================
+  dvwa:
+    image: vulnerables/web-dvwa:latest
+    container_name: ctf-dvwa
+    restart: unless-stopped
+    ports:
+      - "${PORT_DVWA:-8081}:80"
+    environment:
+      - MYSQL_PASS=password
+    networks:
+      - ctf-net
+    profiles: ["all", "web-classic"]
+
+  bwapp:
+    image: raesene/bwapp:latest
+    container_name: ctf-bwapp
+    restart: unless-stopped
+    ports:
+      - "${PORT_BWAPP:-8082}:80"
+    networks:
+      - ctf-net
+    profiles: ["all", "web-classic"]
+
+  mutillidae:
+    image: citizenstig/nowasp:latest
+    container_name: ctf-mutillidae
+    restart: unless-stopped
+    ports:
+      - "${PORT_MUTILLIDAE:-8083}:80"
+    networks:
+      - ctf-net
+    profiles: ["all", "web-classic"]
+
+  xvwa:
+    image: s4n7h0/xvwa:latest
+    container_name: ctf-xvwa
+    restart: unless-stopped
+    ports:
+      - "${PORT_XVWA:-8084}:80"
+    networks:
+      - ctf-net
+    profiles: ["all", "web-classic"]
+
+  # ============================================================================
+  # PROFILE: web-modern (OWASP Juice Shop & OWASP WebGoat)
+  # ============================================================================
+  juiceshop:
+    image: bkimminich/juice-shop:latest
+    container_name: ctf-juice-shop
+    restart: unless-stopped
+    ports:
+      - "${PORT_JUICESHOP:-3001}:3000"
+    networks:
+      - ctf-net
+    profiles: ["all", "web-modern"]
+
+  webgoat:
+    image: webgoat/webgoat:latest
+    container_name: ctf-webgoat
+    restart: unless-stopped
+    ports:
+      - "${PORT_WEBGOAT:-8080}:8080"
+      - "${PORT_WEBWOLF:-9090}:9090"
+    environment:
+      - WEBGOAT_PORT=8080
+      - WEBWOLF_PORT=9090
+      - WEBGOAT_HOST=0.0.0.0
+      - WEBWOLF_HOST=0.0.0.0
+    networks:
+      - ctf-net
+    profiles: ["all", "web-modern"]
+
+  # ============================================================================
+  # PROFILE: api-graphql (Vulnerable REST APIs & GraphQL Endpoints)
+  # ============================================================================
+  dvga:
+    image: doyensec/damn-vulnerable-graphql-application:latest
+    container_name: ctf-dvga
+    restart: unless-stopped
+    ports:
+      - "${PORT_DVGA:-5013}:5013"
+    environment:
+      - WEB_HOST=0.0.0.0
+      - WEB_PORT=5013
+    networks:
+      - ctf-net
+    profiles: ["all", "api-graphql"]
+
+  vapi:
+    image: roottusk/vapi:latest
+    container_name: ctf-vapi
+    restart: unless-stopped
+    ports:
+      - "${PORT_VAPI:-8085}:80"
+    networks:
+      - ctf-net
+    profiles: ["all", "api-graphql"]
+
+  # ============================================================================
+  # PROFILE: custom-ctf (Containerized Targeted Attack Scenarios & CTF Flags)
+  # ============================================================================
+  ctf-sqli:
+    build:
+      context: ./labs/custom-challenges/sqli-auth-bypass
+      dockerfile: Dockerfile
+    container_name: ctf-challenge-sqli
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_SQLI:-9001}:5000"
+    environment:
+      - FLAG=${FLAG_SQLI:-CTF{5ql_1nj3ct10n_m4st3r_byp4ss_2026}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-ssrf:
+    build:
+      context: ./labs/custom-challenges/ssrf-cloud-sim
+      dockerfile: Dockerfile
+    container_name: ctf-challenge-ssrf
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_SSRF:-9002}:5000"
+    environment:
+      - FLAG=${FLAG_SSRF:-CTF{55rf_cl0ud_m3t4d4t4_3xf1ltr4t10n_9921}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-jwt:
+    build:
+      context: ./labs/custom-challenges/jwt-vault
+      dockerfile: Dockerfile
+    container_name: ctf-challenge-jwt
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_JWT:-9003}:5000"
+    environment:
+      - FLAG=${FLAG_JWT:-CTF{jwt_n0n3_4lg_4nd_w34k_s3cr3t_f0rg3ry}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-ssti:
+    build:
+      context: ./labs/custom-challenges/ssti-templater
+      dockerfile: Dockerfile
+    container_name: ctf-challenge-ssti
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_SSTI:-9004}:5000"
+    environment:
+      - FLAG=${FLAG_SSTI:-CTF{55t1_j1nj42_rce_pyth0n_s4ndb0x_3sc4p3}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-cmd:
+    build:
+      context: ./labs/custom-challenges/cmd-injection
+      dockerfile: Dockerfile
+    container_name: ctf-challenge-cmd
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_CMD:-9005}:5000"
+    environment:
+      - FLAG=${FLAG_CMD:-CTF{0s_c0mm4nd_1nj3ct10n_p1ng_pwn3d_4421}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-port-scanning:
+    build:
+      context: ./labs/custom-challenges/port-scanning-recon
+      dockerfile: Dockerfile
+    container_name: ctf-port-scanning-lab
+    restart: unless-stopped
+    ports:
+      - "${PORT_RECON_SSH:-2222}:22"
+      - "${PORT_RECON_HTTP:-8088}:80"
+      - "${PORT_RECON_FTP:-2121}:21"
+      - "${PORT_RECON_SMTP:-2525}:25"
+      - "${PORT_RECON_DNS:-5353}:53/tcp"
+      - "${PORT_RECON_DNS:-5353}:53/udp"
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf", "network-recon"]
+
+  ctf-anonymous-services:
+    build:
+      context: ./labs/custom-challenges/anonymous-services-lab
+      dockerfile: Dockerfile
+    container_name: ctf-anonymous-services-lab
+    restart: unless-stopped
+    ports:
+      - "${PORT_SMB:-445}:445"
+      - "${PORT_SMB_NETBIOS:-139}:139"
+      - "${PORT_REDIS:-6379}:6379"
+      - "${PORT_ANON_FTP:-2122}:21"
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf", "network-recon"]
+
+  ctf-linux-privesc:
+    build:
+      context: ./labs/custom-challenges/linux-privesc-arena
+      dockerfile: Dockerfile
+    container_name: ctf-linux-privesc-lab
+    restart: unless-stopped
+    ports:
+      - "${PORT_PRIVESC_SSH:-2223}:22"
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf", "privesc"]
+
+  ctf-file-upload:
+    build:
+      context: ./labs/custom-challenges/file-upload-lfi
+      dockerfile: Dockerfile
+    container_name: ctf-file-upload-lab
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_UPLOAD:-9006}:5000"
+    environment:
+      - FLAG=${FLAG_UPLOAD:-CTF{f1l3_upl04d_lf1_rce_byp4ss_9934}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-idor-banking:
+    build:
+      context: ./labs/custom-challenges/idor-banking
+      dockerfile: Dockerfile
+    container_name: ctf-idor-banking-lab
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_IDOR:-9007}:5000"
+    environment:
+      - FLAG=${FLAG_IDOR:-CTF{1d0r_b0l4_pr1v1l3g3_3sc4l4t10n_8821}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-hash-cracking:
+    build:
+      context: ./labs/custom-challenges/hash-cracking-lab
+      dockerfile: Dockerfile
+    container_name: ctf-hash-cracking-lab
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_HASH:-9008}:5000"
+    environment:
+      - FLAG=${FLAG_HASH:-CTF{h4sh_cr4ck1ng_m4st3r_j0hn_h4shc4t_8832}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-xxe:
+    build:
+      context: ./labs/custom-challenges/xxe-invoicer
+      dockerfile: Dockerfile
+    container_name: ctf-xxe-invoicer-lab
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_XXE:-9009}:5000"
+    environment:
+      - FLAG=${FLAG_XXE:-CTF{xx3_3xt3rn4l_3nt1ty_xpl01t_9912}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-nosqli:
+    build:
+      context: ./labs/custom-challenges/nosqli-gateway
+      dockerfile: Dockerfile
+    container_name: ctf-nosqli-gateway-lab
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_NOSQLI:-9010}:5000"
+    environment:
+      - FLAG=${FLAG_NOSQLI:-CTF{n05ql_1nj3ct10n_m0ng0_0p3r4t0r_pwnd_8812}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-deserialization:
+    build:
+      context: ./labs/custom-challenges/insecure-deserialization
+      dockerfile: Dockerfile
+    container_name: ctf-insecure-deserialization-lab
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_DESERIALIZATION:-9011}:5000"
+    environment:
+      - FLAG=${FLAG_DESERIALIZATION:-CTF{p1ckl3_d353r14l1z4t10n_rc3_pwn4g3_9941}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-race-condition:
+    build:
+      context: ./labs/custom-challenges/race-condition-bank
+      dockerfile: Dockerfile
+    container_name: ctf-race-condition-lab
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_RACE:-9012}:5000"
+    environment:
+      - FLAG=${FLAG_RACE:-CTF{r4c3_c0nd1t10n_t0ct0u_mult1thr34d_pwn3d_7719}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-graphql-vault:
+    build:
+      context: ./labs/custom-challenges/graphql-api-vault
+      dockerfile: Dockerfile
+    container_name: ctf-graphql-vault-lab
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_GRAPHQL:-9013}:5000"
+    environment:
+      - FLAG=${FLAG_GRAPHQL:-CTF{gr4phql_1ntr0sp3ct10n_s3cr3t_sch3m4_8819}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-cors-csrf:
+    build:
+      context: ./labs/custom-challenges/cors-csrf-portal
+      dockerfile: Dockerfile
+    container_name: ctf-cors-csrf-lab
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_CORS:-9014}:5000"
+    environment:
+      - FLAG=${FLAG_CORS:-CTF{c0rs_m1sc0nf1g_cr3d3nt14l_th3ft_4419}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-pwn-bof:
+    build:
+      context: ./labs/custom-challenges/buffer-overflow-arena
+      dockerfile: Dockerfile
+    container_name: ctf-pwn-bof-lab
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_BOF:-9015}:5000"
+    environment:
+      - FLAG=${FLAG_BOF:-CTF{buff3r_0v3rfl0w_r3t2w1n_pwn_m4st3r_64b1t_8829}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+  ctf-ws-hijack:
+    build:
+      context: ./labs/custom-challenges/websocket-chat-hijack
+      dockerfile: Dockerfile
+    container_name: ctf-ws-hijack-lab
+    restart: unless-stopped
+    ports:
+      - "${PORT_CTF_WS:-9016}:5000"
+    environment:
+      - FLAG=${FLAG_WS:-CTF{csw5h_w3bs0ck3t_h1j4ck_0r1g1n_pwn_5512}}
+    networks:
+      - ctf-net
+    profiles: ["all", "custom-ctf"]
+
+networks:
+  ctf-net:
+    driver: bridge
+
